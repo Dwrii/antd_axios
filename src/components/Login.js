@@ -12,9 +12,8 @@ const Login = () => {
     const navigate = useNavigate();
     const onFinish = (values) => {
         console.log('Success:', values);
-        // Perform email validation here
-        if (values.account.includes('@')) {
-            // Send data to Spring Boot server
+        // Check if 'account' is defined and contains '@'
+        if (values.account?.includes('@')) {
             axios.post('http://localhost:8080/users/add', {
                 name: values.username,
                 password: values.password,
@@ -22,17 +21,28 @@ const Login = () => {
             })
             .then(response => {
                 console.log('User registered:', response.data);
-                alert("Account Made, Login again to access");
-                navigate('/register'); 
+                alert("Account created successfully. Please log in.");
+                navigate('/register');
             })
             .catch(error => {
-                console.error('Error registering user:', error);
-                alert("An error occurred during registration.");
+                if (error.response) {
+                    console.log('Error status:', error.response.status);
+                    console.log('Error data:', error.response.data);
+                    if (error.response.status === 500) { 
+                        alert("A user with the given email already exists, please try with another email"); 
+                    } else {
+                        alert("An error occurred during registration. Please try again later.");
+                    }
+                } else {
+                    alert("No response received. Server may be down. Please check your network connection and try again.");
+                }
             });
+            
         } else {
-            alert("Sorry, the Email Address is not valid. Please try something else.");
+            alert("Invalid email address. Please enter a valid email.");
         }
     };
+    
 
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
